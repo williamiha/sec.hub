@@ -5,7 +5,7 @@ info:
   description: |-
     API de solução antifraude para análise de risco durante processos de vínculo e transações do PIX, retornando o nível de confiança, força do vínculo das variáveis informadas e insights. Nossos modelos e a abordagem de IA validam a verdadeira identidade digital do usuário final por meio da combinação de dados, análise de dispositivos e transações realizadas, prevenindo riscos de fraude em cada momento, seja ele no Onboarding ou Transação.
     
-    # Autenticação
+    # Segurança
       Todas as requisições submetidas à nossa API devém ser realizadas através de um token gerado através de um usuário, senha e id da entidade que devem ser fornecidos pela ClearSale. Entre em contato com o seu consultor de vendas para mais informações.
     
     # Fingerprint
@@ -703,7 +703,7 @@ components:
     Bearer:
       type: apiKey
       description: "Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer abcd1234\""
-      name: Authorization
+      name: Segurança
       in: header
 security:
   - Bearer: []
