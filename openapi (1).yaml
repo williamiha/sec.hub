@@ -1,0 +1,751 @@
+openapi: 3.0.1
+info:
+  title: sec.hub
+  x-logo:
+    url: 'https://www.cip-bancos.org.br/SiteAssets/logo_web%20(004).png'
+  version: v1
+  description: |-
+    API de solução antifraude para análise de risco durante processos de vínculo e transações do PIX, retornando o nível de confiança, força do vínculo das variáveis informadas e insights. Nossos modelos e a abordagem de IA validam a verdadeira identidade digital do usuário final por meio da combinação de dados, análise de dispositivos e transações realizadas, prevenindo riscos de fraude em cada momento, seja ele no Onboarding ou Transação.
+    
+    # Introdução
+    O objetivo deste documento é apresentar as especificações técnicas da solução de prevenção à fraude no PIX - BCSS. A solução **sec.hub** é uma plataforma construída em uma parceria entre a CIP e a Clearsale, empresas com vasta experiência em tecnologia e prevenção à fraude.
+    
+    A plataforma foi elaborada para ser utilizada pelo ecossistema de pagamentos instantâneos brasileiro como um todo, utilizando um conceito de base compartilhada. Quanto mais participantes estiverem integrados à solução, mais seguro será o sistema. Ao mesmo tempo, permite autonomia e controle total dos participantes terem sua própria gestão de risco, recebendo os melhores insumos para tomada de decisão.
+    
+    O **sec.hub** estará em constante evolução para prevenir fraudes no sistema PIX.
+  
+    # Componentes da solução
+    A solução de prevenção a fraude no sistema de pagamentos instantâneos brasileiro é composta por 4 componentes principais: **pontuação de nível de risco**, **força de vínculos**, **insights** e **identificação do dispositivo**. Além disso, ela prevê 3 fluxos iniciais: validação de vínculo na DICT, análise transacional e cadastro de fraudes.
+    
+    O acesso a solução é feito através de API REST, usando padrões de mercado seguros, além de integração de SDK para captura da identificação do dispositivo.
+    
+    Nos fluxos de validação de vínculo ao DICT e transação no PIX, o participante deve incorporar os retornos das chamadas de API às suas próprias regras internas de validação. Com isso terá todos os insumos e informações mais recentes para tomada de decisão, podendo tomar ações diferentes para níveis de riscos baixo, médio e alto.
+    
+    # Segurança
+      Todas as requisições submetidas à nossa API devém ser realizadas através de um token gerado através de um usuário, senha e id da entidade que devem ser fornecidos pela ClearSale. Entre em contato com o seu consultor de vendas para mais informações.
+      
+    # Ambiente de Homologação  
+    
+    # Fingerprint
+    Para completa utilização da solução **sec.hub** é necessário que o Fingerprint esteja integrado no ato da captura dos dados. Para maiores informações sobre as configurações do Fingerprint [**clique aqui**.](https://api.clearsale.com.br/docs/finger-print).
+    
+    ## SDK
+    Para completa utilização do Fingerprint é necessário que o SDK esteja integrado no ato da captura dos dados no aplicativo. Para maiores informações sobre as configurações do SDK [**clique aqui**.](https://api.clearsale.com.br/docs/mobile-sdk/versions).
+    
+    # Lista de insights
+    
+    
+    
+    
+    
+    
+  
+servers:
+  - url: 'https://pix-hmg.sec-hub.com.br/v1'
+    description: Homologação
+  - url:  'https://pix.sec-hub.com.br/v1'
+    description: Produção
+tags:
+  - name: Autenticação
+    description: |
+      Todas as requisições submetidas à nossa API devém ser realizadas através de um token gerado através de um usuário, senha e id da entidade que devem ser fornecidos pela ClearSale. Entre em contato com o seu consultor de vendas para mais informações.
+  - name: Vínculo
+    description: |-
+                  A solução **sec.hub** mensura o nível de confiança durante a inclusão, portabilidade ou reivindicação de um registro na DICT.
+  - name: Transacional
+    description: |-
+                  A solução **sec.hub** mensura o nível de confiança durante a inclusão, portabilidade ou reivindicação de um registro na DICT.
+  - name: Retroalimentação
+    description: |-
+                  A retroalimentação possibilita ao participante contribuir com informações  para enriquecer os dados de suas próprias análises futuras. De modo geral sempre que uma consulta for feita, seja de **vínculo** ou **transacional**, esta será incluída na base de dados e utilizada em correções futuras. No entanto, um participante pode optar por não fazer uma consulta de dados a fim de otimizar seus custos. Neste cenário, a retroalimentação irá apenas incluir os dados da requisição na base de dados para correlação futura.                
+paths:
+  /authentication:
+    post:
+      tags:
+        - Autenticação
+      summary: Autenticação
+      description: |-
+            Na autenticação, além do token retornamos seu tempo de expiração. É necessário que contemple no seu desenvolvimento o gerenciamento da vida útil do token com base nesse tempo de expiração.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenCommand'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenCommand'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenCommand'
+      responses:
+        '201':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/TokenDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/TokenDto'
+  /analysis/entries:
+    post:
+      tags:
+        - Vínculo
+      summary: Gera uma análise de risco para requisições de vínculo.
+      description: |-
+                  Este endpoint deve ser atualizado para obter a análise de risco durante a inclusão, portabilidade ou reivindicação de um registro no DICT.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+      responses:
+        '201':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/EntryResultDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryResultDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/EntryResultDto'
+  /analysis/transfers:
+    post:
+      tags:
+        - Transacional
+      summary: Gera uma análise de risco para transações no PIX
+      description: |-
+                  Esse endpoint deve ser utilizado para avaliar o nível de risco de uma transação PIX, esta requisição deve ser feita imediatamente antes de se incluir a transação no SPI, de modo que viabilize uma ação do participante.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+      responses:
+        '201':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/TransferResultDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResultDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/TransferResultDto'
+  
+  /feedback/entries:
+    post:
+      tags:
+        - Retroalimentação
+      summary: Envia uma consulta de vínculo para retroalimentação
+      description: |-
+                  Este método difere de uma requisição normal por não retornar uma análise de risco e também não gera custo ao participante. Para enviar uma requisição de retroalimentação, é necessário preencher o campo "Request-Type" com a opção 1 tanto para o vínculo quanto no transacional.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/TransferResultDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResultDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/TransferResultDto'
+  /feedback/transfers:
+    post:
+      tags:
+        - Retroalimentação
+      summary: Envia uma consulta de transação para retroalimentação
+      description: |-
+        Este método difere de uma requisição normal por não retornar uma análise de risco e também não gera custo ao participante. Para enviar uma requisição de retroalimentação, é necessário preencher o campo "Request-Type" com a opção 1 tanto para o vínculo quanto no transacional.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/TransferResultDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResultDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/TransferResultDto'
+  /feedback/frauds:
+    post:
+      tags:
+        - Retroalimentação
+      summary: Envia uma marcação de fraude para retroalimentação
+      description: |-
+                O participante pode também auxiliar na retroalimentação da base de dados para incluir ou atualizar uma marcação de fraude na plataforma.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFraudCommand'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateFraudCommand'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateFraudCommand'
+      responses:
+        '200':
+          description: Success
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/FraudResultDto'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FraudResultDto'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/FraudResultDto'
+
+components:
+  schemas:
+    AddressDto:
+      required:
+        - zipCode
+      type: object
+      properties:
+        zipCode:
+          type: string
+          description: Customer address zipcode.
+        street:
+          type: string
+          description: Address street.
+          nullable: true
+        number:
+          type: string
+          description: Number in street.
+          nullable: true
+        complement:
+          type: string
+          description: 'Addres complement, e.g apartament 12.'
+          nullable: true
+        district:
+          type: string
+          description: City district
+          nullable: true
+        city:
+          type: string
+          description: Customer city
+          nullable: true
+        state:
+          type: string
+          description: Customer state
+          nullable: true
+        country:
+          type: string
+          description: Customer country
+          nullable: true
+    AccountDto:
+      required:
+        - accountNumber
+        - accountType
+        - branch
+        - participant
+      type: object
+      properties:
+        participant:
+          type: string
+          description: Bank number.
+        branch:
+          type: string
+          description: Bank account agency.
+        accountNumber:
+          type: string
+          description: Bank account number.
+        accountType:
+          type: string
+          description: 'Account Type, e.g.: "CACC", "SLRY", "SVGS".'
+    CreateEntryCommand:
+      required:
+        - account
+        - document
+        - documentType
+        - email
+        - keyType
+        - name
+        - phone
+        - reason
+      type: object
+      properties:
+        reason:
+          type: string
+          description: >-
+            Reasons for Entry, it is the same field sent for DICT transaction by
+            the participant, options available: "USER_REQUESTED",
+            "ACCOUNT_CLOSURE", "BRANCH_TRANSFER", "ENTRY_INACTIVITY" and
+            "RECONCILIATION".
+        requestId:
+          type: string
+          description: >-
+            UUID version 4 value and must be unique in the context of the same
+            participant, it is the same field sent for DICT transaction by the
+            participant.
+          nullable: true
+        name:
+          type: string
+          description: >-
+            Person or organization name, it is the same value used for DICT
+            transaction on 'Onwner' object.
+        document:
+          type: string
+          description: >-
+            Document value, only numbers without format, e.g.: "12345678901"
+            (for CPF) or "12345678901234" (for CNPJ).
+        documentType:
+          type: string
+          description: 'Document type, options available: "CPF" and "CNPJ".'
+        phone:
+          type: string
+          description: >-
+            Complete phone number including country code, area code and number,
+            e.g.: "+5510998765432"
+        email:
+          type: string
+          description: Email account.
+        verifiedPhone:
+          type: boolean
+          description: Phone number has been verified. Default value is false.
+        verifiedEmail:
+          type: boolean
+          description: Email account has been verified. Default value is false.
+        address:
+          $ref: '#/components/schemas/AddressDto'
+        evp:
+          type: string
+          description: EVP value generated and used for DICT transactions.
+          nullable: true
+        keyType:
+          type: string
+          description: >-
+            Key type on DICT transaction, options available: "CPF", "CNPJ",
+            "PHONE", "EMAIL", "EVP".
+        account:
+          $ref: '#/components/schemas/AccountDto'
+        referenceDate:
+          type: string
+          description: Transaction UTC datetime value.
+          format: date-time
+        sessionId:
+          type: string
+          description: SessionId value used in behavior analytics integration.
+          nullable: true
+        fingerprintVariables:
+          type: object
+          description: Fingerprint variables information.
+          nullable: true
+    ScoreDto:
+      type: object
+      properties:
+        value:
+          type: number
+          description: Score value.
+          format: double
+        reason:
+          type: string
+          description: A reason description for score.
+          nullable: true
+        date:
+          type: string
+          description: Score processing date.
+          format: date-time
+    RatingDto:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int32
+        relatedTo:
+          type: array
+          items:
+            type: string
+          nullable: true
+    InsightDto:
+      type: object
+      properties:
+        code:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        type:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        relevance:
+          type: string
+          nullable: true
+        relatedTo:
+          type: array
+          items:
+            type: string
+          nullable: true
+    EntryResultDto:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        score:
+          $ref: '#/components/schemas/ScoreDto'
+        ratings:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingDto'
+          nullable: true
+        insights:
+          type: array
+          items:
+            $ref: '#/components/schemas/InsightDto'
+          nullable: true
+    UrlInfoDto:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Url value.
+          nullable: true
+        ip:
+          type: string
+          description: Url ip value.
+          nullable: true
+    QrCodeInfoDto:
+      type: object
+      properties:
+        value:
+          type: string
+          description: QRCode value for fixed/dynamic qrcode.
+          nullable: true
+        dynamicUrl:
+          $ref: '#/components/schemas/UrlInfoDto'
+    DocumentInfoDto:
+      required:
+        - document
+        - documentType
+      type: object
+      properties:
+        documentType:
+          type: string
+          description: >-
+            Document value, only numbers without format, e.g.: "12345678901"
+            (for CPF) or "12345678901234" (for CNPJ).
+        document:
+          type: string
+          description: 'Document type, options avaiable: "CPF" and "CNPJ".'
+    EntryKeyDto:
+      required:
+        - type
+        - value
+      type: object
+      properties:
+        value:
+          type: string
+          description: "Key Value on DICT\r\n\r\nIn case of CPF or CNPJ type use only numbers e.g.: \"12345678901\" (for CPF) or \"12345678901234\" (for CNPJ).\r\n\r\nIn case of PHONE use complete phone number including country code, area code and number e.g.: \"+5510998765432\"."
+        type:
+          type: string
+          description: >-
+            Key type on DICT, options available: "CPF", "CNPJ", "PHONE",
+            "EMAIL", "EVP".
+    TransferRecipientInfoDto:
+      required:
+        - account
+        - info
+        - key
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/DocumentInfoDto'
+        account:
+          $ref: '#/components/schemas/AccountDto'
+        key:
+          $ref: '#/components/schemas/EntryKeyDto'
+    TransferSenderInfoDto:
+      required:
+        - account
+        - info
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/DocumentInfoDto'
+        account:
+          $ref: '#/components/schemas/AccountDto'
+    CreateTransferCommand:
+      required:
+        - amount
+        - channel
+        - currency
+        - endToEndId
+        - recipient
+        - sender
+        - transactionType
+      type: object
+      properties:
+        transactionType:
+          type: string
+          description: 'Message type used on SPI transaction, e.g.: "PACS.008", "PACS.004".'
+        endToEndId:
+          type: string
+          description: >-
+            Unique identification assigned by the initiating party to
+            unambiguously identify the transaction, same value used on PACS.008
+            and PACS.004 message.
+        txId:
+          type: string
+          description: >-
+            Transaction Identification used on PACS messages for SPI on PIX
+            transactions by QRCode or Link.
+          nullable: true
+        channel:
+          type: string
+          description: >-
+            Channel origin for the transaction, options available: "WEB",
+            "MOBILE" and "AGENCY".
+        qrCode:
+          $ref: '#/components/schemas/QrCodeInfoDto'
+        urlLink:
+          $ref: '#/components/schemas/UrlInfoDto'
+        recipient:
+          $ref: '#/components/schemas/TransferRecipientInfoDto'
+        sender:
+          $ref: '#/components/schemas/TransferSenderInfoDto'
+        currency:
+          type: string
+          description: Currency used on transfer.
+        amount:
+          type: number
+          description: Amount value on transfer.
+          format: double
+        referenceDate:
+          type: string
+          description: Transaction datetime value.
+          format: date-time
+        sessionId:
+          type: string
+          description: SessionId value used in behavior analytics integration.
+          nullable: true
+        fingerprintVariables:
+          type: object
+          description: Fingerprint variables information.
+          nullable: true
+    TransferResultDto:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        score:
+          $ref: '#/components/schemas/ScoreDto'
+        ratings:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingDto'
+          nullable: true
+        insights:
+          type: array
+          items:
+            $ref: '#/components/schemas/InsightDto'
+          nullable: true
+    CreateTokenCommand:
+      required:
+        - password
+        - username
+      type: object
+      properties:
+        username:
+          type: string
+          description: Username for API authentication.
+        password:
+          type: string
+          description: Password for API authentication.
+    TokenDto:
+      required:
+        - expiresInMinutes
+        - token
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token value for use in authenticated endpoints.
+        expiresInMinutes:
+          type: integer
+          description: Value in minutes for token expiration.
+          format: int32
+    EntryDto:
+      type: object
+      properties:
+        key:
+          $ref: '#/components/schemas/EntryKeyDto'
+        owner:
+          $ref: '#/components/schemas/DocumentInfoDto'
+    TransferDto:
+      required:
+        - amount
+        - channel
+        - currency
+        - endToEndId
+        - recipient
+        - senderInfo
+        - transactionType
+      type: object
+      properties:
+        transactionType:
+          type: string
+          description: 'Message type used on SPI transaction, e.g.: "PACS.008", "PACS.004".'
+        endToEndId:
+          type: string
+          description: >-
+            Unique identification assigned by the initiating party to
+            unambiguously identify the transaction, same value used on PACS.008
+            and PACS.004 message.
+        txId:
+          type: string
+          description: >-
+            Transaction Identification used on PACS messages for SPI on PIX
+            transactions by QRCode or Link.
+          nullable: true
+        channel:
+          type: string
+          description: Channel origin for the transaction.
+        qrCode:
+          $ref: '#/components/schemas/QrCodeInfoDto'
+        urlLink:
+          $ref: '#/components/schemas/UrlInfoDto'
+        recipient:
+          $ref: '#/components/schemas/TransferRecipientInfoDto'
+        senderInfo:
+          $ref: '#/components/schemas/DocumentInfoDto'
+        currency:
+          type: string
+          description: Currency used on transfer.
+        amount:
+          type: number
+          description: Amount value on transfer.
+          format: double
+        sessionId:
+          type: string
+          description: SessionId value used in behavior analytics integration.
+          nullable: true
+        referenceDate:
+          type: string
+          description: Transaction datetime value.
+          format: date-time
+    CreateFraudCommand:
+      required:
+        - participant
+        - visibility
+      type: object
+      properties:
+        participant:
+          type: string
+          description: Bank number.
+        summary:
+          type: string
+          description: Summary about fraud event.
+          nullable: true
+        description:
+          type: string
+          description: Description about fraud event.
+          nullable: true
+        visibility:
+          type: integer
+          description: >-
+            Visibility value, mark: 1 - Only you can see; 2 - You'll colaborate
+            with others.
+          format: int32
+        referenceDate:
+          type: string
+          description: Fraud event UTC datetime value.
+          format: date-time
+        status:
+          type: integer
+          description: >-
+            Fraud status: 0 - Suspected fraud; 1 - Fraud confirmed; 2 -
+            Suspected fraud descarted; 3 - Fraud archived;
+          format: int32
+        relatedEntries:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntryDto'
+          description: List of entry data related on fraud event
+          nullable: true
+        relatedQrCode:
+          type: array
+          items:
+            $ref: '#/components/schemas/QrCodeInfoDto'
+          description: List of QRCode data related on fraud event
+          nullable: true
+        relatedUrlLink:
+          type: array
+          items:
+            $ref: '#/components/schemas/UrlInfoDto'
+          description: List of URL Link data related on fraud event
+          nullable: true
+        relatedTransfers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransferDto'
+          description: List of transfers data related on fraud event
+          nullable: true
+    FraudResultDto:
+      type: object
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: "Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer abcd1234\""
+      name: Authorization
+      in: header
+security:
+  - Bearer: []
+  
