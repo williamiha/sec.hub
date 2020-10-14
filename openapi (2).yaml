@@ -5,14 +5,14 @@ info:
     url: 'https://www.cip-bancos.org.br/SiteAssets/logo_web%20(004).png'
   version: v1
   description: |-
-    ### Contato: soluções e apoio ao participante
+    ### Contato: Soluções e Apoio ao Participante
     O responsável deve ser contatado nos casos de:
     - Dúvidas sobre as informações tratadas neste documento;
     - Falhas ou vulnerabilidades encontradas no processo;
     - Necessidade de adequação identificada internamente, apresentada por auditoria, por órgão regulador ou por cliente.
     
     ### Vigência: 14/10/2020 a 14/10/2021 
-    Esta data será alterada quando da geração de nova versão. Este manual deverá ser revisto periodicamente, quando do vencimento de sua vigência, ou quando necessário.
+    Este manual deverá ser revisto periodicamente, quando do vencimento de sua vigência, ou quando necessário.
     
     ### Histórico de atualização
     [**Clique aqui**](https://github.com/williamiha/sec.hub/blob/main/Hist%C3%B3rico%20de%20atualiza%C3%A7%C3%A3o.md) para acessar o histórico de atualização deste documento
@@ -50,7 +50,7 @@ info:
     # Componentes da solução
     A solução **sec.hub** recebe como input um conjunto de dados e o dispositivo, capturado por meio do Fingerprint ClearSale, realiza a análise ba base de dados da  ClearSale e retorna em tempo real:
     - Nível de risco: varia de 1 a 99% e se refere à propensão do pedido em questão ser uma tentativa de fraude (contexto análise de vínculo na DICT e Transação Pix).
-    - Força de vínculo: classificação sobre a força do vínculo de todas as duplas de dados recebidos, podendo ser Baixo, Médio ou Alto (ex: CPF com celular, celular com dispositivo, etc);
+    - Força de vínculo: classificação sobre a força do vínculo de todas as duplas de dados recebidos, podendo ser **1-Baixo**, **2-Médio** ou **3-Alto** (ex: CPF com celular, celular com dispositivo, etc);
     - Insights: informações adicionais sobre os dados informados, como por exemplo alertas sobre os dados recebidos (CPF, celular, Email e device). 
     
     O acesso a solução é feito através de API REST, usando padrões de mercado seguros, além de integração de SDK para captura da identificação do dispositivo.
