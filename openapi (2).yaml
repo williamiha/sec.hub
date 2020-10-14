@@ -1,6 +1,8 @@
 openapi: 3.0.1
 info:
   title: sec.hub
+  x-logo:
+    url: 'https://www.cip-bancos.org.br/SiteAssets/logo_web%20(004).png'
   version: v1
   description: |-
     ### Contato: soluções e apoio ao participante
