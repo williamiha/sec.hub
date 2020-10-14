@@ -69,7 +69,7 @@ info:
 
 
 servers:
-  - url: 'http://apipix-hmg.sec-hub.com.br'
+  - url: 'https://apipix-hmg.sec-hub.com.br'
   
 tags:
   - name: Autenticação
