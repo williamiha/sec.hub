@@ -61,9 +61,9 @@ Nos fluxos de validação de vínculo ao DICT e transação no PIX, o participan
 
 | Nome     | Descrição                                       | Tipo                                                         |
 | -------- | ----------------------------------------------- | ------------------------------------------------------------ |
-| Score    | Objeto contendo informações do score do cliente | [Score](https://api.clearsale.com.br/docs/home/data-trust#score-dictionary) |
-| Ratings  | Ratings da relação de dados enviados            | [Ratings](https://api.clearsale.com.br/docs/home/data-trust#ratings-dictionary) |
-| Insights | Lista de objetos contendo os insights           | [Insights](https://api.clearsale.com.br/docs/home/data-trust#insights-dictionary) |
+| Score    | Objeto contendo informações do score do cliente | Score |
+| Ratings  | Ratings da relação de dados enviados            | Ratings |
+| Insights | Lista de objetos contendo os insights           | Insights |
 
 #### Score
 
