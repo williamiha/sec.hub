@@ -1678,7 +1678,7 @@ components:
     Bearer:
       type: apiKey
       description: "Insira 'Bearer' [espaço] e em seguida seu token no campo de texto abaixo.\r\n\r\nExample: \"Bearer abcd1234\""
-      name: Autorização
+      name: Authorization
       in: header
 security:
   - Bearer: []
