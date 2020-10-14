@@ -1,0 +1,1684 @@
+openapi: 3.0.1
+info:
+  title: sec.hub
+  x-logo:
+    url: 'https://www.cip-bancos.org.br/SiteAssets/logo_web%20(004).png'
+  version: v1
+  description: |-
+    ### Contato: Soluções e Apoio ao Participante
+    O responsável deve ser contatado nos casos de:
+    - Dúvidas sobre as informações tratadas neste documento;
+    - Falhas ou vulnerabilidades encontradas no processo;
+    - Necessidade de adequação identificada internamente, apresentada por auditoria, por órgão regulador ou por cliente.
+    
+    ### Vigência: 14/10/2020 a 14/10/2021 
+    Este manual deverá ser revisto periodicamente, quando do vencimento de sua vigência, ou quando necessário.
+    
+    ### Histórico de atualização
+    [**Clique aqui**](https://github.com/williamiha/sec.hub/blob/main/Hist%C3%B3rico%20de%20atualiza%C3%A7%C3%A3o.md) para acessar o histórico de atualização deste documento
+    
+    ### Ciclo de revisão
+    Este documento será revisto e atualizado quando:
+    - Houver solicitação de atendimento, correção ou adição de informações;
+    - Existir a necessidade de atender requisitos legais, boas práticas ou recomendações de auditoria;
+    - Existir mudança na organização que tenha impacto relevante na atividade abordada neste documento;
+    - No vencimento, conforme item HISTÓRICO DE ATUALIZAÇÃO deste documento.
+    
+    ### Guarda e retenção
+    As versões deste documento deverão ser armazenadas por cinco anos, após o vencimento de seu prazo de validade.
+    
+    ### Disponibilidade do documento
+    A última versão deste documento poderá ser obtida pelo sitio da CIP na Internet no endereço: [**www.cip-bancos.org.br**](www.cip-bancos.org.br)
+    
+    ### Classificação da Segurança
+    Este documento é de livre acesso para consulta e só há garantias da integridade de seu conteúdo quando obtido diretamente no local estabelecido no item anterior. A CIP, como proprietária do documento, possui todos os direitos de elaboração, reprodução e distribuição em caráter exclusivo. A CIP não se responsabiliza por versões desatualizadas, modificadas por qualquer circunstância ou provenientes de outras fontes que não a fonte oficial designada para fornecer este material.
+    
+    # Introdução
+    
+    O objetivo deste documento é apresentar as especificações técnicas da solução de prevenção à fraude no PIX - BCSS. A solução **sec.hub** é uma plataforma construída em uma parceria entre a CIP e a Clearsale, empresas com vasta experiência em tecnologia e prevenção à fraude.
+    
+    A plataforma foi elaborada para ser utilizada pelo ecossistema de pagamentos instantâneos brasileiro como um todo, utilizando um conceito de base compartilhada. Quanto mais participantes estiverem integrados à solução, mais seguro será o sistema. Ao mesmo tempo, permite autonomia e controle total dos participantes terem sua própria gestão de risco, recebendo os melhores insumos para tomada de decisão.
+    
+    A solução **sec.hub** foi desenvolvida exclusivamente para atender à necessidade de validação anti-fraude dos processos de **validação de vínculo na DICT**, **análise transacional** e **retroalimentação de fraude**. Cada processo será identificado através da codificação abaixo:
+    
+    - API001: validação de vínculo na DICT
+    - API002: análise de risco para transações PIX
+    - API003: retroalimentação de cadastros na DICT
+    - API004: retroalimentação de transações PIX
+    - API005: retroalimentação de indicadores de fraude
+    
+    # Componentes da solução
+    A solução **sec.hub** recebe como input um conjunto de dados e o dispositivo, capturado por meio do Fingerprint ClearSale, realiza a análise ba base de dados da  ClearSale e retorna em tempo real:
+    - Nível de risco: varia de 1 a 99% e se refere à propensão do pedido em questão ser uma tentativa de fraude (contexto análise de vínculo na DICT e Transação Pix).
+    - Força de vínculo: classificação sobre a força do vínculo de todas as duplas de dados recebidos, podendo ser **1-Baixo**, **2-Médio** ou **3-Alto** (ex: CPF com celular, celular com dispositivo, etc);
+    - Insights: informações adicionais sobre os dados informados, como por exemplo alertas sobre os dados recebidos (CPF, celular, Email e device). 
+    
+    O acesso a solução é feito através de API REST, usando padrões de mercado seguros, além de integração de SDK para captura da identificação do dispositivo.
+    
+    Nos fluxos de validação de vínculo ao DICT e transação no PIX, o participante deve incorporar os retornos das chamadas de API às suas próprias regras internas de validação. Com isso terá todos os insumos e informações mais recentes para tomada de decisão, podendo tomar ações diferentes para níveis de riscos baixo, médio e alto.
+    
+    # Fingerprint
+    Para completa utilização utilização da solução, é necessário que o Fingerprint esteja integrado no ato da captura dos dados. Para maiores informações sobre as configurações do Fingerprint, [**clique aqui.**](https://api.clearsale.com.br/docs/finger-print)
+   
+    ## SDK
+    
+    Para completa utilização do Fingerprint é necessário que o SDK esteja integrado no ato da captura dos dados no aplicativo. Para maiores informações sobre as configurações do SDK [**clique aqui**.](https://api.clearsale.com.br/docs/mobile-sdk/versions).
+    
+    # Lista de insights
+    [**Clique aqui**](https://github.com/williamiha/sec.hub/blob/main/Lista%20de%20Insights%20sechub.md) para baixar a lista completa de insights
+
+
+servers:
+  - url: 'https://apipix-hmg.sec-hub.com.br'
+  
+tags:
+  - name: Autenticação
+    description: |
+      Todas as requisições submetidas à nossa API devém ser realizadas através de um token gerado através de um usuário, senha e id da entidade que devem ser fornecidos pela ClearSale. Entre em contato com o seu consultor de vendas para mais informações.
+  - name: Análise de vínculo - API001
+    description: |-
+                  A solução **sec.hub** mensura o nível de risco durante a inclusão, portabilidade ou reivindicação de um registro na DICT.
+  - name: Análise para transações - API002
+    description: |-
+                  A solução **sec.hub** mensura o nível de risco de uma transação PIX. Esta requisição deve ser feita antes de se incluir a transação no SPI, de modo que viabilize uma ação do participante
+  - name: Retroalimentação
+    description: |-
+                  A retroalimentação possibilita ao participante contribuir com informações  para enriquecer os dados de suas próprias análises futuras. De modo geral sempre que uma consulta for feita, seja de **vínculo** ou **transacional**, esta será incluída na base de dados e utilizada em correções futuras. No entanto, um participante pode optar por não fazer uma consulta de dados a fim de otimizar seus custos. Neste cenário, a retroalimentação irá apenas incluir os dados da requisição na base de dados para correlação futura.
+                  
+paths:
+  /v1/analysis/entries:
+    post:
+      tags:
+        - Análise de vínculo - API001
+      summary: Gera uma análise de risco de vínculo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+            example:
+              reason: USER_REQUESTED
+              requestId: 1a2bdcb0-c8a8-464e-929d-6c93f8a2a143
+              name: Fulano de Tal
+              document: '18356615801'
+              documentType: CPF
+              phone:
+                countryCode: 55
+                areaCode: 11
+                number: 999999999
+                verified: false
+              email: fulano.tal@email.com.br
+              verifiedEmail: false
+              address:
+                zipCode: '00000000'
+                street: null
+                number: null
+                complement: null
+                district: null
+                city: null
+                state: null
+                country: null
+              evp: 123e4567-e89b-12d3-a456-426655440000
+              keyType: EVP
+              account:
+                participant: '12345678'
+                branch: '0001'
+                accountNumber: '0007654321'
+                accountType: CACC
+                openingDate: '2020-10-14T17:29:05.562655Z'
+              referenceDate: '2020-10-14T17:29:05.5626552Z'
+              sessionId: mysessionid-4-d3v1c3
+              fingerprintVariables: null
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+            example:
+              reason: USER_REQUESTED
+              requestId: 1a2bdcb0-c8a8-464e-929d-6c93f8a2a143
+              name: Fulano de Tal
+              document: '18356615801'
+              documentType: CPF
+              phone:
+                countryCode: 55
+                areaCode: 11
+                number: 999999999
+                verified: false
+              email: fulano.tal@email.com.br
+              verifiedEmail: false
+              address:
+                zipCode: '00000000'
+                street: null
+                number: null
+                complement: null
+                district: null
+                city: null
+                state: null
+                country: null
+              evp: 123e4567-e89b-12d3-a456-426655440000
+              keyType: EVP
+              account:
+                participant: '12345678'
+                branch: '0001'
+                accountNumber: '0007654321'
+                accountType: CACC
+                openingDate: '2020-10-14T17:29:05.562655Z'
+              referenceDate: '2020-10-14T17:29:05.5626552Z'
+              sessionId: mysessionid-4-d3v1c3
+              fingerprintVariables: null
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+            example:
+              reason: USER_REQUESTED
+              requestId: 1a2bdcb0-c8a8-464e-929d-6c93f8a2a143
+              name: Fulano de Tal
+              document: '18356615801'
+              documentType: CPF
+              phone:
+                countryCode: 55
+                areaCode: 11
+                number: 999999999
+                verified: false
+              email: fulano.tal@email.com.br
+              verifiedEmail: false
+              address:
+                zipCode: '00000000'
+                street: null
+                number: null
+                complement: null
+                district: null
+                city: null
+                state: null
+                country: null
+              evp: 123e4567-e89b-12d3-a456-426655440000
+              keyType: EVP
+              account:
+                participant: '12345678'
+                branch: '0001'
+                accountNumber: '0007654321'
+                accountType: CACC
+                openingDate: '2020-10-14T17:29:05.562655Z'
+              referenceDate: '2020-10-14T17:29:05.5626552Z'
+              sessionId: mysessionid-4-d3v1c3
+              fingerprintVariables: null
+      responses:
+        '201':
+          description: Created.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/EntryResultDto'
+              example:
+                id: ab979ac2c7a24c6eb11ad10f61f39438
+                score:
+                  value: 90.23
+                  date: '2020-10-14T17:29:05.5686156Z'
+                ratings:
+                  - value: 3
+                    relatedTo:
+                      - Document
+                      - Phone
+                  - value: 1
+                    relatedTo:
+                      - Document
+                      - ZipCode
+                  - value: 2
+                    relatedTo:
+                      - Document
+                      - Email
+                insights:
+                  - code: '2134'
+                    description: >-
+                      O CPF informado foi visto pela última vez entre 3 e 6
+                      meses.
+                  - code: '2015'
+                    description: >-
+                      O Telefone informado foi visto pela primeira vez entre 6
+                      meses e 1 ano.
+                  - code: '109'
+                    description: >-
+                      A dupla CPF + Telefone informada foi vista pela última vez
+                      há menos de 1 mês.
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryResultDto'
+              example:
+                id: ab979ac2c7a24c6eb11ad10f61f39438
+                score:
+                  value: 90.23
+                  date: '2020-10-14T17:29:05.5686156Z'
+                ratings:
+                  - value: 3
+                    relatedTo:
+                      - Document
+                      - Phone
+                  - value: 1
+                    relatedTo:
+                      - Document
+                      - ZipCode
+                  - value: 2
+                    relatedTo:
+                      - Document
+                      - Email
+                insights:
+                  - code: '2134'
+                    description: >-
+                      O CPF informado foi visto pela última vez entre 3 e 6
+                      meses.
+                  - code: '2015'
+                    description: >-
+                      O Telefone informado foi visto pela primeira vez entre 6
+                      meses e 1 ano.
+                  - code: '109'
+                    description: >-
+                      A dupla CPF + Telefone informada foi vista pela última vez
+                      há menos de 1 mês.
+            text/json:
+              schema:
+                $ref: '#/components/schemas/EntryResultDto'
+              example:
+                id: ab979ac2c7a24c6eb11ad10f61f39438
+                score:
+                  value: 90.23
+                  date: '2020-10-14T17:29:05.5686156Z'
+                ratings:
+                  - value: 3
+                    relatedTo:
+                      - Document
+                      - Phone
+                  - value: 1
+                    relatedTo:
+                      - Document
+                      - ZipCode
+                  - value: 2
+                    relatedTo:
+                      - Document
+                      - Email
+                insights:
+                  - code: '2134'
+                    description: >-
+                      O CPF informado foi visto pela última vez entre 3 e 6
+                      meses.
+                  - code: '2015'
+                    description: >-
+                      O Telefone informado foi visto pela primeira vez entre 6
+                      meses e 1 ano.
+                  - code: '109'
+                    description: >-
+                      A dupla CPF + Telefone informada foi vista pela última vez
+                      há menos de 1 mês.
+        '400':
+          description: BadRequest.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.5.1'
+                title: One or more validation errors occurred.
+                status: 400
+                detail: Please refer to the errors property for additional details
+                instance: /v1/analysis/entries
+                errors:
+                  Name:
+                    - '''Name'' must not be empty.'
+                  Email:
+                    - '''Email'' must not be empty.'
+                  Phone:
+                    - '''Phone'' must not be empty.'
+                  Reason:
+                    - >-
+                      The Reason field can contain only these values
+                      USER_REQUESTED, ACCOUNT_CLOSURE, BRANCH_TRANSFER,
+                      ENTRY_INACTIVITY, RECONCILIATION.
+                  Account.Branch:
+                    - '''Branch'' must not be empty.'
+                  Account.AccountType:
+                    - '''AccountType'' must not be empty.'
+                  Account.OpeningDate:
+                    - '''OpeningDate'' must not be empty.'
+                  Account.Participant:
+                    - '''Participant'' must not be empty.'
+                  Account.AccountNumber:
+                    - '''AccountNumber'' must not be empty.'
+                  KeyType:
+                    - >-
+                      The Key Type field can contain only these values CPF,
+                      CNPJ, PHONE, EMAIL, EVP.
+                  Document:
+                    - '''Document'' must not be empty.'
+                  DocumentType:
+                    - '''DocumentType'' must not be empty.'
+                  ReferenceDate:
+                    - '''ReferenceDate'' must not be empty.'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.5.1'
+                title: One or more validation errors occurred.
+                status: 400
+                detail: Please refer to the errors property for additional details
+                instance: /v1/analysis/entries
+                errors:
+                  Name:
+                    - '''Name'' must not be empty.'
+                  Email:
+                    - '''Email'' must not be empty.'
+                  Phone:
+                    - '''Phone'' must not be empty.'
+                  Reason:
+                    - >-
+                      The Reason field can contain only these values
+                      USER_REQUESTED, ACCOUNT_CLOSURE, BRANCH_TRANSFER,
+                      ENTRY_INACTIVITY, RECONCILIATION.
+                  Account.Branch:
+                    - '''Branch'' must not be empty.'
+                  Account.AccountType:
+                    - '''AccountType'' must not be empty.'
+                  Account.OpeningDate:
+                    - '''OpeningDate'' must not be empty.'
+                  Account.Participant:
+                    - '''Participant'' must not be empty.'
+                  Account.AccountNumber:
+                    - '''AccountNumber'' must not be empty.'
+                  KeyType:
+                    - >-
+                      The Key Type field can contain only these values CPF,
+                      CNPJ, PHONE, EMAIL, EVP.
+                  Document:
+                    - '''Document'' must not be empty.'
+                  DocumentType:
+                    - '''DocumentType'' must not be empty.'
+                  ReferenceDate:
+                    - '''ReferenceDate'' must not be empty.'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.5.1'
+                title: One or more validation errors occurred.
+                status: 400
+                detail: Please refer to the errors property for additional details
+                instance: /v1/analysis/entries
+                errors:
+                  Name:
+                    - '''Name'' must not be empty.'
+                  Email:
+                    - '''Email'' must not be empty.'
+                  Phone:
+                    - '''Phone'' must not be empty.'
+                  Reason:
+                    - >-
+                      The Reason field can contain only these values
+                      USER_REQUESTED, ACCOUNT_CLOSURE, BRANCH_TRANSFER,
+                      ENTRY_INACTIVITY, RECONCILIATION.
+                  Account.Branch:
+                    - '''Branch'' must not be empty.'
+                  Account.AccountType:
+                    - '''AccountType'' must not be empty.'
+                  Account.OpeningDate:
+                    - '''OpeningDate'' must not be empty.'
+                  Account.Participant:
+                    - '''Participant'' must not be empty.'
+                  Account.AccountNumber:
+                    - '''AccountNumber'' must not be empty.'
+                  KeyType:
+                    - >-
+                      The Key Type field can contain only these values CPF,
+                      CNPJ, PHONE, EMAIL, EVP.
+                  Document:
+                    - '''Document'' must not be empty.'
+                  DocumentType:
+                    - '''DocumentType'' must not be empty.'
+                  ReferenceDate:
+                    - '''ReferenceDate'' must not be empty.'
+        '500':
+          description: InternalServerError.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.1'
+                title: Internal server error.
+                status: 500
+                detail: >-
+                  The server encountered an unexpected condition that prevented
+                  it from fulfilling the request.
+                instance: /v1/analysis/entries
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.1'
+                title: Internal server error.
+                status: 500
+                detail: >-
+                  The server encountered an unexpected condition that prevented
+                  it from fulfilling the request.
+                instance: /v1/analysis/entries
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.1'
+                title: Internal server error.
+                status: 500
+                detail: >-
+                  The server encountered an unexpected condition that prevented
+                  it from fulfilling the request.
+                instance: /v1/analysis/entries
+  '/v1/analysis/entries/{id}':
+    get:
+      tags:
+        - Análise de vínculo - API001
+      summary: Retorna uma análise de vínculo por id
+      operationId: EntriesGet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            nullable: true
+      responses:
+        '200':
+          description: OK.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/EntryResultDto'
+              example:
+                id: ab979ac2c7a24c6eb11ad10f61f39438
+                score:
+                  value: 90.23
+                  date: '2020-10-14T17:29:05.5700482Z'
+                ratings:
+                  - value: 3
+                    relatedTo:
+                      - Document
+                      - Phone
+                  - value: 1
+                    relatedTo:
+                      - Document
+                      - ZipCode
+                  - value: 2
+                    relatedTo:
+                      - Document
+                      - Email
+                insights:
+                  - code: '2134'
+                    description: >-
+                      O CPF informado foi visto pela última vez entre 3 e 6
+                      meses.
+                  - code: '2015'
+                    description: >-
+                      O Telefone informado foi visto pela primeira vez entre 6
+                      meses e 1 ano.
+                  - code: '109'
+                    description: >-
+                      A dupla CPF + Telefone informada foi vista pela última vez
+                      há menos de 1 mês.
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryResultDto'
+              example:
+                id: ab979ac2c7a24c6eb11ad10f61f39438
+                score:
+                  value: 90.23
+                  date: '2020-10-14T17:29:05.5700482Z'
+                ratings:
+                  - value: 3
+                    relatedTo:
+                      - Document
+                      - Phone
+                  - value: 1
+                    relatedTo:
+                      - Document
+                      - ZipCode
+                  - value: 2
+                    relatedTo:
+                      - Document
+                      - Email
+                insights:
+                  - code: '2134'
+                    description: >-
+                      O CPF informado foi visto pela última vez entre 3 e 6
+                      meses.
+                  - code: '2015'
+                    description: >-
+                      O Telefone informado foi visto pela primeira vez entre 6
+                      meses e 1 ano.
+                  - code: '109'
+                    description: >-
+                      A dupla CPF + Telefone informada foi vista pela última vez
+                      há menos de 1 mês.
+            text/json:
+              schema:
+                $ref: '#/components/schemas/EntryResultDto'
+              example:
+                id: ab979ac2c7a24c6eb11ad10f61f39438
+                score:
+                  value: 90.23
+                  date: '2020-10-14T17:29:05.5700482Z'
+                ratings:
+                  - value: 3
+                    relatedTo:
+                      - Document
+                      - Phone
+                  - value: 1
+                    relatedTo:
+                      - Document
+                      - ZipCode
+                  - value: 2
+                    relatedTo:
+                      - Document
+                      - Email
+                insights:
+                  - code: '2134'
+                    description: >-
+                      O CPF informado foi visto pela última vez entre 3 e 6
+                      meses.
+                  - code: '2015'
+                    description: >-
+                      O Telefone informado foi visto pela primeira vez entre 6
+                      meses e 1 ano.
+                  - code: '109'
+                    description: >-
+                      A dupla CPF + Telefone informada foi vista pela última vez
+                      há menos de 1 mês.
+        '204':
+          description: NoContent.
+        '500':
+          description: InternalServerError.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.1'
+                title: Internal server error.
+                status: 500
+                detail: >-
+                  The server encountered an unexpected condition that prevented
+                  it from fulfilling the request.
+                instance: /v1/analysis/entries/ab979ac2c7a24c6eb11ad10f61f39438
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.1'
+                title: Internal server error.
+                status: 500
+                detail: >-
+                  The server encountered an unexpected condition that prevented
+                  it from fulfilling the request.
+                instance: /v1/analysis/entries/ab979ac2c7a24c6eb11ad10f61f39438
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.1'
+                title: Internal server error.
+                status: 500
+                detail: >-
+                  The server encountered an unexpected condition that prevented
+                  it from fulfilling the request.
+                instance: /v1/analysis/entries/ab979ac2c7a24c6eb11ad10f61f39438
+  /v1/analysis/transfers:
+    post:
+      tags:
+        - Análise para transações - API002
+      summary: Gera uma análise para transações PIX
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+      responses:
+        '501':
+          description: NotImplemented.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/analysis/transfers
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/analysis/transfers
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/analysis/transfers
+  /v1/authentication:
+    post:
+      tags:
+        - Autenticação
+      summary: Requisição para geração de token
+      description: |-
+            Na autenticação, além do token retornamos seu tempo de expiração. É necessário que contemple no seu desenvolvimento o gerenciamento da vida útil do token com base nesse tempo de expiração.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenCommand'
+            example:
+              username: pixapi-usr-swagger
+              password: 05qIMjjM0p8wL3wpHDzOkhu8kRPRpabh
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenCommand'
+            example:
+              username: pixapi-usr-swagger
+              password: 05qIMjjM0p8wL3wpHDzOkhu8kRPRpabh
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateTokenCommand'
+            example:
+              username: pixapi-usr-swagger
+              password: 05qIMjjM0p8wL3wpHDzOkhu8kRPRpabh
+      responses:
+        '200':
+          description: Analysis performed successfully.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/TokenDto'
+              example:
+                token: >-
+                  8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD
+                expiresInMinutes: 1440
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenDto'
+              example:
+                token: >-
+                  8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD
+                expiresInMinutes: 1440
+            text/json:
+              schema:
+                $ref: '#/components/schemas/TokenDto'
+              example:
+                token: >-
+                  8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD8sgbian0ii1TfP7GDrJVJtMAu0TdtdJD
+                expiresInMinutes: 1440
+        '400':
+          description: BadRequest.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.5.1'
+                title: One or more validation errors occurred.
+                status: 400
+                detail: Please refer to the errors property for additional details
+                instance: /v1/authentication
+                errors:
+                  Password:
+                    - '''Password'' must not be empty.'
+                  Username:
+                    - '''Username'' must not be empty.'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.5.1'
+                title: One or more validation errors occurred.
+                status: 400
+                detail: Please refer to the errors property for additional details
+                instance: /v1/authentication
+                errors:
+                  Password:
+                    - '''Password'' must not be empty.'
+                  Username:
+                    - '''Username'' must not be empty.'
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.5.1'
+                title: One or more validation errors occurred.
+                status: 400
+                detail: Please refer to the errors property for additional details
+                instance: /v1/authentication
+                errors:
+                  Password:
+                    - '''Password'' must not be empty.'
+                  Username:
+                    - '''Username'' must not be empty.'
+        '401':
+          description: Unauthorized.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7235#section-3.1'
+                title: Unauthorized operation.
+                status: 401
+                detail: Username or Password is incorrect.
+                instance: /v1/authentication
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7235#section-3.1'
+                title: Unauthorized operation.
+                status: 401
+                detail: Username or Password is incorrect.
+                instance: /v1/authentication
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7235#section-3.1'
+                title: Unauthorized operation.
+                status: 401
+                detail: Username or Password is incorrect.
+                instance: /v1/authentication
+        '500':
+          description: InternalServerError.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.1'
+                title: Internal server error.
+                status: 500
+                detail: >-
+                  The server encountered an unexpected condition that prevented
+                  it from fulfilling the request.
+                instance: /v1/authentication
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.1'
+                title: Internal server error.
+                status: 500
+                detail: >-
+                  The server encountered an unexpected condition that prevented
+                  it from fulfilling the request.
+                instance: /v1/authentication
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.1'
+                title: Internal server error.
+                status: 500
+                detail: >-
+                  The server encountered an unexpected condition that prevented
+                  it from fulfilling the request.
+                instance: /v1/authentication
+  /v1/feedback/entries:
+    post:
+      tags:
+        - Retroalimentação
+      summary: Retroalimentação de cadastros na DICT - API003
+      description: |-
+                  Este método difere de uma requisição normal por não retornar uma análise de risco e também não gera custo ao participante. Para enviar uma requisição de retroalimentação, é necessário preencher o campo "Request-Type" com a opção 1 tanto para o vínculo quanto no transacional.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+            example:
+              reason: USER_REQUESTED
+              requestId: 1a2bdcb0-c8a8-464e-929d-6c93f8a2a143
+              name: Fulano de Tal
+              document: '18356615801'
+              documentType: CPF
+              phone:
+                countryCode: 55
+                areaCode: 11
+                number: 999999999
+                verified: false
+              email: fulano.tal@email.com.br
+              verifiedEmail: false
+              address:
+                zipCode: '00000000'
+                street: null
+                number: null
+                complement: null
+                district: null
+                city: null
+                state: null
+                country: null
+              evp: 123e4567-e89b-12d3-a456-426655440000
+              keyType: EVP
+              account:
+                participant: '12345678'
+                branch: '0001'
+                accountNumber: '0007654321'
+                accountType: CACC
+                openingDate: '2020-10-14T17:29:05.5913232Z'
+              referenceDate: '2020-10-14T17:29:05.5913234Z'
+              sessionId: mysessionid-4-d3v1c3
+              fingerprintVariables: null
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+            example:
+              reason: USER_REQUESTED
+              requestId: 1a2bdcb0-c8a8-464e-929d-6c93f8a2a143
+              name: Fulano de Tal
+              document: '18356615801'
+              documentType: CPF
+              phone:
+                countryCode: 55
+                areaCode: 11
+                number: 999999999
+                verified: false
+              email: fulano.tal@email.com.br
+              verifiedEmail: false
+              address:
+                zipCode: '00000000'
+                street: null
+                number: null
+                complement: null
+                district: null
+                city: null
+                state: null
+                country: null
+              evp: 123e4567-e89b-12d3-a456-426655440000
+              keyType: EVP
+              account:
+                participant: '12345678'
+                branch: '0001'
+                accountNumber: '0007654321'
+                accountType: CACC
+                openingDate: '2020-10-14T17:29:05.5913232Z'
+              referenceDate: '2020-10-14T17:29:05.5913234Z'
+              sessionId: mysessionid-4-d3v1c3
+              fingerprintVariables: null
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateEntryCommand'
+            example:
+              reason: USER_REQUESTED
+              requestId: 1a2bdcb0-c8a8-464e-929d-6c93f8a2a143
+              name: Fulano de Tal
+              document: '18356615801'
+              documentType: CPF
+              phone:
+                countryCode: 55
+                areaCode: 11
+                number: 999999999
+                verified: false
+              email: fulano.tal@email.com.br
+              verifiedEmail: false
+              address:
+                zipCode: '00000000'
+                street: null
+                number: null
+                complement: null
+                district: null
+                city: null
+                state: null
+                country: null
+              evp: 123e4567-e89b-12d3-a456-426655440000
+              keyType: EVP
+              account:
+                participant: '12345678'
+                branch: '0001'
+                accountNumber: '0007654321'
+                accountType: CACC
+                openingDate: '2020-10-14T17:29:05.5913232Z'
+              referenceDate: '2020-10-14T17:29:05.5913234Z'
+              sessionId: mysessionid-4-d3v1c3
+              fingerprintVariables: null
+      responses:
+        '501':
+          description: NotImplemented.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/feedback/entries
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/feedback/entries
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/feedback/entries
+  /v1/feedback/transfers:
+    post:
+      tags:
+        - Retroalimentação
+      summary: Retroalimentação de transações PIX - API004
+      description: |-
+                  Este método difere de uma requisição normal por não retornar uma análise de risco e também não gera custo ao participante. Para enviar uma requisição de retroalimentação, é necessário preencher o campo "Request-Type" com a opção 1 tanto para o vínculo quanto no transacional.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateTransferCommand'
+      responses:
+        '501':
+          description: NotImplemented.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/feedback/transfers
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/feedback/transfers
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/feedback/transfers
+  /v1/feedback/frauds:
+    post:
+      tags:
+        - Retroalimentação
+      summary: Retroalimentação de indicadores de fraude - API005
+      description: |-
+                O participante pode também auxiliar na retroalimentação da base de dados para incluir ou atualizar uma marcação de fraude na plataforma.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFraudCommand'
+          text/json:
+            schema:
+              $ref: '#/components/schemas/CreateFraudCommand'
+          application/*+json:
+            schema:
+              $ref: '#/components/schemas/CreateFraudCommand'
+      responses:
+        '501':
+          description: NotImplemented.
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/feedback/frauds
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/feedback/frauds
+            text/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetails'
+              example:
+                type: 'https://tools.ietf.org/html/rfc7231#section-6.6.2'
+                title: Resource not implemented.
+                status: 501
+                detail: The method or operation is not implemented.
+                instance: /v1/feedback/frauds
+components:
+  schemas:
+    PhoneDto:
+      required:
+        - areaCode
+        - countryCode
+        - number
+        - verified
+      type: object
+      properties:
+        countryCode:
+          maximum: 2000
+          minimum: 1
+          type: integer
+          description: 'Country code for the phone number, onlys numbers.'
+          format: int32
+        areaCode:
+          maximum: 1000
+          minimum: 1
+          type: integer
+          description: 'Area code for the phone number, onlys numbers.'
+          format: int32
+        number:
+          maximum: 999999999
+          minimum: 1
+          type: integer
+          description: 'Phone number, onlys numbers.'
+          format: int32
+        verified:
+          type: boolean
+          description: Phone number has been verified. Default value is false.
+      additionalProperties: false
+      description: Phone object.
+    AddressDto:
+      required:
+        - zipCode
+      type: object
+      properties:
+        zipCode:
+          maxLength: 8
+          minLength: 8
+          pattern: '^\d{8}$'
+          type: string
+          description: Customer address zipcode.
+        street:
+          maxLength: 200
+          type: string
+          description: Address street.
+          nullable: true
+        number:
+          maxLength: 45
+          type: string
+          description: Number in street.
+          nullable: true
+        complement:
+          maxLength: 200
+          type: string
+          description: 'Addres complement, e.g apartament 12.'
+          nullable: true
+        district:
+          maxLength: 45
+          type: string
+          description: City district
+          nullable: true
+        city:
+          maxLength: 45
+          type: string
+          description: Customer city
+          nullable: true
+        state:
+          maxLength: 90
+          type: string
+          description: Customer state
+          nullable: true
+        country:
+          maxLength: 90
+          type: string
+          description: Customer country
+          nullable: true
+      additionalProperties: false
+      description: Address object.
+    AccountDto:
+      required:
+        - accountNumber
+        - accountType
+        - branch
+        - openingDate
+        - participant
+      type: object
+      properties:
+        participant:
+          minLength: 1
+          pattern: '^[0-9]{8}$'
+          type: string
+          description: 'Bank number, SPB identifier'
+        branch:
+          minLength: 1
+          pattern: '^[0-9]{1,4}$'
+          type: string
+          description: Bank account agency number without verifying digit.
+        accountNumber:
+          minLength: 1
+          pattern: '^[0-9]{1,20}$'
+          type: string
+          description: Bank account number.
+        accountType:
+          minLength: 1
+          enum:
+            - CACC
+            - SLRY
+            - SVGS
+          type: string
+          description: 'Account Type, options available: [CACC,SLRY,SVGS].'
+        openingDate:
+          type: string
+          description: >-
+            Account opening date. In case of unknown the time use the initial
+            time for the day.
+          format: date-time
+      additionalProperties: false
+      description: Bank account object information.
+    CreateEntryCommand:
+      required:
+        - account
+        - document
+        - documentType
+        - email
+        - keyType
+        - name
+        - phone
+        - reason
+        - referenceDate
+        - verifiedEmail
+      type: object
+      properties:
+        reason:
+          maxLength: 50
+          minLength: 1
+          enum:
+            - USER_REQUESTED
+            - ACCOUNT_CLOSURE
+            - BRANCH_TRANSFER
+            - ENTRY_INACTIVITY
+            - RECONCILIATION
+          type: string
+          description: >-
+            Reasons for Entry, it is the same field sent for DICT transaction by
+            the participant, options available:
+            [USER_REQUESTED,ACCOUNT_CLOSURE,BRANCH_TRANSFER,ENTRY_INACTIVITY,RECONCILIATION].
+        requestId:
+          maxLength: 36
+          minLength: 36
+          type: string
+          description: >-
+            UUID version 4 value and must be unique in the context of the same
+            participant, it is the same field sent for DICT transaction by the
+            participant.
+        name:
+          maxLength: 200
+          minLength: 1
+          pattern: >-
+            ^[^-](?=[\u000A\u000D\u0020-\u007E\u0085\u00A0-\u00FF])[\p{L}\-
+            ]+[^-]$
+          type: string
+          description: >-
+            Person or organization full name, it is the same value used for DICT
+            transaction on Onwner object.
+        document:
+          maxLength: 14
+          minLength: 11
+          pattern: '^([0-9]{11}|[0-9]{14})$'
+          type: string
+          description: >-
+            Document value, only numbers, patterns: [CPF]: "^[0-9]{11}$" |
+            [CNPJ]: "^[0-9]{14}$".
+        documentType:
+          maxLength: 4
+          minLength: 1
+          enum:
+            - CPF
+            - CNPJ
+          type: string
+          description: 'Document type, options available: [CPF,CNPJ].'
+        phone:
+          $ref: '#/components/schemas/PhoneDto'
+        email:
+          maxLength: 77
+          minLength: 1
+          pattern: >-
+            ^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$
+          type: string
+          description: Email account.
+        verifiedEmail:
+          type: boolean
+          description: Email account has been verified. Default value is false.
+        address:
+          $ref: '#/components/schemas/AddressDto'
+        evp:
+          pattern: '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
+          type: string
+          description: EVP value generated and used for DICT transactions.
+          nullable: true
+        keyType:
+          minLength: 1
+          enum:
+            - CPF
+            - CNPJ
+            - PHONE
+            - EMAIL
+            - EVP
+          type: string
+          description: >-
+            Key type on DICT transaction, options available:
+            [CPF,CNPJ,PHONE,EMAIL,EVP].
+        account:
+          $ref: '#/components/schemas/AccountDto'
+        referenceDate:
+          type: string
+          description: Transaction UTC datetime value.
+          format: date-time
+        sessionId:
+          type: string
+          description: >-
+            SessionId value used in behavior analytics integration, value
+            between 5 and 128 chars.
+          nullable: true
+        fingerprintVariables:
+          description: Fingerprint variables information key-value json object.
+          nullable: true
+      additionalProperties: false
+      description: Entry object for analysis.
+    ScoreDto:
+      type: object
+      properties:
+        value:
+          type: number
+          description: Score value.
+          format: double
+        date:
+          type: string
+          description: Score processing date.
+          format: date-time
+      additionalProperties: false
+    RatingDto:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int32
+        relatedTo:
+          type: array
+          items:
+            type: string
+          nullable: true
+      additionalProperties: false
+    InsightDto:
+      type: object
+      properties:
+        code:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+      additionalProperties: false
+    EntryResultDto:
+      type: object
+      properties:
+        id:
+          type: string
+          nullable: true
+        score:
+          $ref: '#/components/schemas/ScoreDto'
+        ratings:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingDto'
+          nullable: true
+        insights:
+          type: array
+          items:
+            $ref: '#/components/schemas/InsightDto'
+          nullable: true
+      additionalProperties: false
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        status:
+          type: integer
+          format: int32
+          nullable: true
+        detail:
+          type: string
+          nullable: true
+        instance:
+          type: string
+          nullable: true
+      additionalProperties: {}
+    UrlInfoDto:
+      type: object
+      properties:
+        url:
+          type: string
+          description: Url value.
+          nullable: true
+        ip:
+          type: string
+          description: Url ip value.
+          nullable: true
+      additionalProperties: false
+    QrCodeInfoDto:
+      type: object
+      properties:
+        value:
+          type: string
+          description: QRCode value for fixed/dynamic qrcode.
+          nullable: true
+        dynamicUrl:
+          $ref: '#/components/schemas/UrlInfoDto'
+      additionalProperties: false
+    DocumentInfoDto:
+      required:
+        - document
+        - documentType
+      type: object
+      properties:
+        documentType:
+          type: string
+          description: >-
+            Document value, only numbers without format, e.g.: "12345678901"
+            (for CPF) or "12345678901234" (for CNPJ).
+        document:
+          type: string
+          description: 'Document type, options avaiable: "CPF" and "CNPJ".'
+      additionalProperties: false
+    EntryKeyDto:
+      required:
+        - type
+        - value
+      type: object
+      properties:
+        value:
+          type: string
+          description: "Key Value on DICT\r\n\r\nIn case of CPF or CNPJ type use only numbers e.g.: \"12345678901\" (for CPF) or \"12345678901234\" (for CNPJ).\r\n\r\nIn case of PHONE use complete phone number including country code, area code and number e.g.: \"+5510998765432\"."
+        type:
+          type: string
+          description: >-
+            Key type on DICT, options available: "CPF", "CNPJ", "PHONE",
+            "EMAIL", "EVP".
+      additionalProperties: false
+    TransferRecipientInfoDto:
+      required:
+        - account
+        - info
+        - key
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/DocumentInfoDto'
+        account:
+          $ref: '#/components/schemas/AccountDto'
+        key:
+          $ref: '#/components/schemas/EntryKeyDto'
+      additionalProperties: false
+    TransferSenderInfoDto:
+      required:
+        - account
+        - info
+      type: object
+      properties:
+        info:
+          $ref: '#/components/schemas/DocumentInfoDto'
+        account:
+          $ref: '#/components/schemas/AccountDto'
+      additionalProperties: false
+    CreateTransferCommand:
+      required:
+        - amount
+        - channel
+        - currency
+        - endToEndId
+        - recipient
+        - sender
+        - transactionType
+      type: object
+      properties:
+        transactionType:
+          type: string
+          description: 'Message type used on SPI transaction, e.g.: "PACS.008", "PACS.004".'
+        endToEndId:
+          type: string
+          description: >-
+            Unique identification assigned by the initiating party to
+            unambiguously identify the transaction, same value used on PACS.008
+            and PACS.004 message.
+        txId:
+          type: string
+          description: >-
+            Transaction Identification used on PACS messages for SPI on PIX
+            transactions by QRCode or Link.
+          nullable: true
+        channel:
+          type: string
+          description: >-
+            Channel origin for the transaction, options available: "WEB",
+            "MOBILE" and "AGENCY".
+        qrCode:
+          $ref: '#/components/schemas/QrCodeInfoDto'
+        urlLink:
+          $ref: '#/components/schemas/UrlInfoDto'
+        recipient:
+          $ref: '#/components/schemas/TransferRecipientInfoDto'
+        sender:
+          $ref: '#/components/schemas/TransferSenderInfoDto'
+        currency:
+          type: string
+          description: Currency used on transfer.
+        amount:
+          type: number
+          description: Amount value on transfer.
+          format: double
+        referenceDate:
+          type: string
+          description: Transaction datetime value.
+          format: date-time
+        sessionId:
+          type: string
+          description: >-
+            SessionId value used in behavior analytics integration, value
+            between 5 and 128 chars.
+          nullable: true
+        fingerprintVariables:
+          description: Fingerprint variables information.
+          nullable: true
+      additionalProperties: false
+    CreateTokenCommand:
+      required:
+        - password
+        - username
+      type: object
+      properties:
+        username:
+          maxLength: 100
+          minLength: 1
+          type: string
+          description: Username for API authentication.
+        password:
+          maxLength: 100
+          minLength: 1
+          type: string
+          description: Password for API authentication.
+      additionalProperties: false
+      description: Token object for authentication
+    TokenDto:
+      required:
+        - expiresInMinutes
+        - token
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token value for use in authenticated endpoints.
+        expiresInMinutes:
+          type: integer
+          description: Value in minutes for token expiration.
+          format: int32
+      additionalProperties: false
+    EntryDto:
+      type: object
+      properties:
+        key:
+          $ref: '#/components/schemas/EntryKeyDto'
+        owner:
+          $ref: '#/components/schemas/DocumentInfoDto'
+      additionalProperties: false
+    TransferDto:
+      required:
+        - amount
+        - channel
+        - currency
+        - endToEndId
+        - recipient
+        - senderInfo
+        - transactionType
+      type: object
+      properties:
+        transactionType:
+          type: string
+          description: 'Message type used on SPI transaction, e.g.: "PACS.008", "PACS.004".'
+        endToEndId:
+          type: string
+          description: >-
+            Unique identification assigned by the initiating party to
+            unambiguously identify the transaction, same value used on PACS.008
+            and PACS.004 message.
+        txId:
+          type: string
+          description: >-
+            Transaction Identification used on PACS messages for SPI on PIX
+            transactions by QRCode or Link.
+          nullable: true
+        channel:
+          type: string
+          description: Channel origin for the transaction.
+        qrCode:
+          $ref: '#/components/schemas/QrCodeInfoDto'
+        urlLink:
+          $ref: '#/components/schemas/UrlInfoDto'
+        recipient:
+          $ref: '#/components/schemas/TransferRecipientInfoDto'
+        senderInfo:
+          $ref: '#/components/schemas/DocumentInfoDto'
+        currency:
+          type: string
+          description: Currency used on transfer.
+        amount:
+          type: number
+          description: Amount value on transfer.
+          format: double
+        sessionId:
+          type: string
+          description: SessionId value used in behavior analytics integration.
+          nullable: true
+        referenceDate:
+          type: string
+          description: Transaction datetime value.
+          format: date-time
+      additionalProperties: false
+    CreateFraudCommand:
+      required:
+        - participant
+        - visibility
+      type: object
+      properties:
+        participant:
+          type: string
+          description: Bank number.
+        summary:
+          type: string
+          description: Summary about fraud event.
+          nullable: true
+        description:
+          type: string
+          description: Description about fraud event.
+          nullable: true
+        visibility:
+          type: integer
+          description: >-
+            Visibility value, mark: 1 - Only you can see; 2 - You'll colaborate
+            with others.
+          format: int32
+        referenceDate:
+          type: string
+          description: Fraud event UTC datetime value.
+          format: date-time
+        status:
+          type: integer
+          description: >-
+            Fraud status: 0 - Suspected fraud; 1 - Fraud confirmed; 2 -
+            Suspected fraud descarted; 3 - Fraud archived;
+          format: int32
+        relatedEntries:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntryDto'
+          description: List of entry data related on fraud event
+          nullable: true
+        relatedQrCode:
+          type: array
+          items:
+            $ref: '#/components/schemas/QrCodeInfoDto'
+          description: List of QRCode data related on fraud event
+          nullable: true
+        relatedUrlLink:
+          type: array
+          items:
+            $ref: '#/components/schemas/UrlInfoDto'
+          description: List of URL Link data related on fraud event
+          nullable: true
+        relatedTransfers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransferDto'
+          description: List of transfers data related on fraud event
+          nullable: true
+      additionalProperties: false
+  securitySchemes:
+    Bearer:
+      type: apiKey
+      description: "Insira 'Bearer' [espaço] e em seguida seu token no campo de texto abaixo.\r\n\r\nExample: \"Bearer abcd1234\""
+      name: Authorization
+      in: header
+security:
+  - Bearer: []
