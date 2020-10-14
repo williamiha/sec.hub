@@ -50,7 +50,7 @@ info:
     # Componentes da solução
     A solução **sec.hub** recebe como input um conjunto de dados e o dispositivo, capturado por meio do Fingerprint ClearSale, realiza a análise na base de dados da  ClearSale e retorna em tempo real:
     - Nível de risco: varia de 1 a 99% e se refere à propensão do pedido em questão ser uma tentativa de fraude (contexto análise de vínculo na DICT e Transação Pix).
-    - Força de vínculo: classificação sobre a força do vínculo de todas as duplas de dados recebidos, podendo ser **1-Baixo**, **2-Médio** ou **3-Alto** (ex: CPF com celular, celular com dispositivo, etc);
+    - Força de vínculo: classificação sobre a força do vínculo de todas as duplas de dados recebidos, podendo ser **1-Baixo**, **2-Médio** ou **3-Alto** (ex: CPF com celular, CPF com email, etc);
     - Insights: informações adicionais sobre os dados informados, como por exemplo alertas sobre os dados recebidos (CPF, celular, Email e device). 
     
     O acesso a solução é feito através de API REST, usando padrões de mercado seguros, além de integração de SDK para captura da identificação do dispositivo.
